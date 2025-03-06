@@ -20,7 +20,7 @@ public class Piece {
         
         try {
             if (this.img == null) {
-              this.img = ImageIO.read(new File(img_file));
+              this.img = ImageIO.read(getClass().getResource(img_file));
             }
           } catch (IOException e) {
             System.out.println("File not found: " + e.getMessage());
@@ -50,7 +50,25 @@ public class Piece {
     //return a list of every square that is "controlled" by this piece. A square is controlled
     //if the piece capture into it legally.
     public ArrayList<Square> getControlledSquares(Square[][] board, Square start) {
-     return null;
+      ArrayList<Square> c = new ArrayList<Square>();
+      int a = 0;
+      int d = 0;
+      int la = 3;
+      int ld = 3;
+      if(start.getRow()==0)
+        a++;
+      if(start.getRow()==7)
+        la--;
+      if(start.getCol()==0)
+        d++;
+      if(start.getCol()==7)
+        ld--;
+      for(int i = a; i < la; i++){
+        for(int j = d; j < ld; j++){
+          c.add(board[start.getRow()-1+i][start.getCol()+j]);
+        }
+      }
+      return c;
     }
     
 
@@ -61,6 +79,20 @@ public class Piece {
     //please note that your piece must have some sort of logic. Just being able to move to every square on the board is not
     //going to score any points.
     public ArrayList<Square> getLegalMoves(Board b, Square start){
-    	return null;
+      ArrayList<Square> c = new ArrayList<Square>();
+      if(b.getTurn() == !start.getColor() && !b.getTurn() == start.getColor()){
+        return c;
+      }
+      for(int i = 0; i < 3; i++){
+        for(int j = 0; j < 3; j++){
+          if(start.getRow()-1+j >= 0 && start.getRow()-1+j< 8 && start.getCol()-1+j >= 0 && start.getCol()-1+j< 8 
+          &&(!b.getSquareArray()[start.getRow()-1+i][start.getCol()-1+j].isOccupied() || b.getSquareArray()[start.getRow()-1+i][start.getCol()-1+j].getOccupyingPiece().getColor() != color)){
+              c.add(b.getSquareArray()[start.getRow()-1+i][start.getCol()-1+j]);
+          }
+        }
+      }
+      
+      
+    	return c;
     }
 }
