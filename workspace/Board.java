@@ -87,26 +87,33 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
 	//since we only have one kind of piece for now you need only set the same number of pieces on either side.
 	//it's up to you how you wish to arrange your pieces.
     private void initializePieces() {
-        board[7][6].put(new Piece(true, RESOURCES_WKNIGHT_PNG));
-        board[7][7].put(new Piece(true, RESOURCES_WROOK_PNG));
-    	board[7][5].put(new Piece(true, RESOURCES_WBISHOP_PNG));
-    	board[7][4].put(new Piece(true, RESOURCES_WKING_PNG));
-        board[7][3].put(new Piece(true, RESOURCES_WQUEEN_PNG));
-        board[7][2].put(new Piece(true, RESOURCES_WBISHOP_PNG));
-        board[7][1].put(new Piece(true, RESOURCES_WKNIGHT_PNG));
-        board[7][0].put(new Piece(true, RESOURCES_WROOK_PNG));
-        board[0][6].put(new Piece(false, RESOURCES_BKNIGHT_PNG));
-        board[0][7].put(new Piece(false, RESOURCES_BROOK_PNG));
-    	board[0][5].put(new Piece(false, RESOURCES_BBISHOP_PNG));
-    	board[0][4].put(new Piece(false, RESOURCES_BKING_PNG));
-        board[0][3].put(new Piece(false, RESOURCES_BQUEEN_PNG));
-        board[0][2].put(new Piece(false, RESOURCES_BBISHOP_PNG));
-        board[0][1].put(new Piece(false, RESOURCES_BKNIGHT_PNG));
-        board[0][0].put(new Piece(false, RESOURCES_BROOK_PNG));
+        
+        board[7][6].put(new Knight(true, RESOURCES_WKNIGHT_PNG));
+        board[7][7].put(new Rook(true, RESOURCES_WROOK_PNG));
+    	board[7][5].put(new Bishop(true, RESOURCES_WBISHOP_PNG));
+        
+    	board[7][4].put(new MyKing(true, RESOURCES_WKING_PNG));
+        board[7][3].put(new Queen(true, RESOURCES_WQUEEN_PNG));
+        
+        board[7][2].put(new Bishop(true, RESOURCES_WBISHOP_PNG));
+        board[7][1].put(new Knight(true, RESOURCES_WKNIGHT_PNG));
+        board[7][0].put(new Rook(true, RESOURCES_WROOK_PNG));
+        board[0][6].put(new Knight(false, RESOURCES_BKNIGHT_PNG));
+        board[0][7].put(new Rook(false, RESOURCES_BROOK_PNG));
+    	board[0][5].put(new Bishop(false, RESOURCES_BBISHOP_PNG));
+        
+    	board[0][4].put(new MyKing(false, RESOURCES_BKING_PNG));
+        board[0][3].put(new Queen(false, RESOURCES_BQUEEN_PNG));
+        
+        board[0][2].put(new Bishop(false, RESOURCES_BBISHOP_PNG));
+        board[0][1].put(new Knight(false, RESOURCES_BKNIGHT_PNG));
+        board[0][0].put(new Rook(false, RESOURCES_BROOK_PNG));
+        
         for(int c = 0; c < board.length; c++){
-            board[6][c].put(new Piece(true, RESOURCES_WPAWN_PNG));
-            board[1][c].put(new Piece(false, RESOURCES_BPAWN_PNG));
+            board[6][c].put(new Pawn(true, RESOURCES_WPAWN_PNG));
+            board[1][c].put(new Pawn(false, RESOURCES_BPAWN_PNG));
         }
+            
     }
 
     public Square[][] getSquareArray() {
@@ -151,9 +158,8 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
     public void mousePressed(MouseEvent e) {
         currX = e.getX();
         currY = e.getY();
-
-        Square sq = (Square) this.getComponentAt(new Point(e.getX(), e.getY()));
-
+        Square sq = (Square)this.getComponentAt(new Point(e.getX(), e.getY()));
+ 
         if (sq.isOccupied()) {
             currPiece = sq.getOccupyingPiece();
             fromMoveSquare = sq;
@@ -167,6 +173,25 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         repaint();
     }
 
+    public boolean isInCheck(boolean kingColor){
+        for(int r = 0; r < board.length; r++){
+            for(int c = 0; c < board.length; c++){
+                if(board[r][c].getOccupyingPiece() != null && board[r][c].getOccupyingPiece().getColor() != kingColor){
+                    ArrayList<Square> controlled =  board[r][c].getOccupyingPiece().getControlledSquares(board, board[r][c]);
+                    for(int ar = 0; ar < controlled.size(); ar++){
+                            if(controlled.get(ar).getOccupyingPiece() != null && controlled.get(ar).getOccupyingPiece().getColor() == kingColor && controlled.get(ar).getOccupyingPiece() instanceof MyKing){
+                                return true;
+                            }
+                        
+                    }
+                }
+                }
+                
+            }
+        return false;
+
+    }
+
     //TO BE IMPLEMENTED!
     //should move the piece to the desired location only if this is a legal move.
     //use the pieces "legal move" function to determine if this move is legal, then complete it by
@@ -177,32 +202,43 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         boolean a = false;
 
         Square endSquare = (Square) this.getComponentAt(new Point(e.getX(), e.getY()));
-        if(currPiece != null){
+        Piece temp = endSquare.getOccupyingPiece();
+        if(currPiece != null && whiteTurn == currPiece.getColor()){
+
+        
 
         for(int i = 0; i < currPiece.getLegalMoves(this, fromMoveSquare).size(); i++){
             if(endSquare == currPiece.getLegalMoves(this, fromMoveSquare).get(i)){
-                endSquare.removePiece();
                 endSquare.put(currPiece);
                 fromMoveSquare.removePiece();
                 a = true;
             }
         }
-        if (a == false){
-            fromMoveSquare.put(currPiece);
+        if (a == false 
+        || isInCheck(whiteTurn)
+        ){
+           fromMoveSquare.put(currPiece);
+           endSquare.put(temp);
+           a = false;
         }
+        // i think we need to move this bloc elsewhere
         
-        //using currPiece
-        for(Square [] row: board){
+         
+        
+        
+       
+        currPiece = null;
+        repaint();
+        if(a){
+            whiteTurn = !whiteTurn;
+        }
+    }
+    for(Square [] row: board){
             for (Square s:row){
                 s.setBorder(null);
             }
         }
-        
-        whiteTurn = !whiteTurn;
-        fromMoveSquare.setDisplay(true);
-        currPiece = null;
-        repaint();
-    }
+    fromMoveSquare.setDisplay(true);
     }
 
     @Override
