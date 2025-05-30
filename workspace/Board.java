@@ -173,24 +173,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         repaint();
     }
 
-    public boolean isInCheck(boolean kingColor){
-        for(int r = 0; r < board.length; r++){
-            for(int c = 0; c < board.length; c++){
-                if(board[r][c].getOccupyingPiece() != null && board[r][c].getOccupyingPiece().getColor() != kingColor){
-                    ArrayList<Square> controlled =  board[r][c].getOccupyingPiece().getControlledSquares(board, board[r][c]);
-                    for(int ar = 0; ar < controlled.size(); ar++){
-                            if(controlled.get(ar).getOccupyingPiece() != null && controlled.get(ar).getOccupyingPiece().getColor() == kingColor && controlled.get(ar).getOccupyingPiece() instanceof MyKing){
-                                return true;
-                            }
-                        
-                    }
-                }
-                }
-                
-            }
-        return false;
 
-    }
 
     //TO BE IMPLEMENTED!
     //should move the piece to the desired location only if this is a legal move.
@@ -202,36 +185,19 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         boolean a = false;
 
         Square endSquare = (Square) this.getComponentAt(new Point(e.getX(), e.getY()));
-        Piece temp = endSquare.getOccupyingPiece();
+	    
         if(currPiece != null && whiteTurn == currPiece.getColor()){
-
-        
-
         for(int i = 0; i < currPiece.getLegalMoves(this, fromMoveSquare).size(); i++){
             if(endSquare == currPiece.getLegalMoves(this, fromMoveSquare).get(i)){
                 endSquare.put(currPiece);
                 fromMoveSquare.removePiece();
-                a = true;
+               whiteTurn = !whiteTurn;
             }
         }
-        if (a == false 
-        || isInCheck(whiteTurn)
-        ){
-           fromMoveSquare.put(currPiece);
-           endSquare.put(temp);
-           a = false;
-        }
-        // i think we need to move this bloc elsewhere
-        
-         
-        
-        
-       
+      
         currPiece = null;
         repaint();
-        if(a){
-            whiteTurn = !whiteTurn;
-        }
+       
     }
     for(Square [] row: board){
             for (Square s:row){
